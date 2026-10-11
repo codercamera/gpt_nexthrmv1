@@ -1,0 +1,266 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: "Noto Sans Thai", "Segoe UI", sans-serif;
+}
+:root {
+  font-family: var(--font-sans);
+  color: #1e293b;
+  background: #f5f7fb;
+  font-size: 14px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select {
+  min-height: 44px;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 2px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 12px;
+  background: white;
+  color: inherit;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #93c5fd;
+  border-color: #2563eb;
+}
+label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #dce3ed;
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-weight: 600;
+  background: white;
+  color: #334155;
+  text-decoration: none;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+.btn-danger {
+  color: #be123c;
+  border-color: #fecdd3;
+}
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px #0f172a03;
+}
+.muted {
+  color: #64748b;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-good {
+  background: #ecfdf5;
+  color: #047857;
+}
+.badge-warn {
+  background: #fffbeb;
+  color: #92400e;
+}
+.badge-bad {
+  background: #fff1f2;
+  color: #be123c;
+}
+.dark {
+  color: #e2e8f0;
+  background: #0f172a;
+}
+.dark body {
+  background: #0f172a;
+}
+.dark .card,
+.dark input,
+.dark select,
+.dark textarea,
+.dark .btn {
+  background: #182235;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+.dark .btn-primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+.dark label,
+.dark .muted {
+  color: #94a3b8;
+}
+.dark .table-head {
+  background: #1e293b;
+}
+.dark .border-slate-200,
+.dark .border-slate-100 {
+  border-color: #334155;
+}
+.dark .bg-white {
+  background: #182235;
+}
+.dark .bg-slate-50 {
+  background: #0f172a;
+}
+.dark .bg-slate-100 {
+  background: #243249;
+}
+.dark .text-slate-900,
+.dark .text-slate-700 {
+  color: #e2e8f0;
+}
+.dark .hover\:bg-slate-50:hover {
+  background: #243249;
+}
+.table-head {
+  background: #f1f5f9;
+  color: #64748b;
+}
+td,
+th {
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef2f6;
+}
+th {
+  font-weight: 500;
+  font-size: 12px;
+}
+.dark td,
+.dark th {
+  border-color: #334155;
+}
+.sheet {
+  max-height: 90dvh;
+  overflow: auto;
+}
+.page-number {
+  font-size: 10px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+.toast {
+  animation: toast-in 0.2s ease-out;
+}
+@keyframes toast-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+}
+@media (max-width: 767px) {
+  .sheet {
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0 !important;
+  }
+  .mobile-card {
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    border-radius: 12px;
+    background: white;
+  }
+  .dark .mobile-card {
+    background: #182235;
+    border-color: #334155;
+  }
+  .page-search {
+    display: none;
+  }
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable,
+  .printable * {
+    visibility: visible !important;
+  }
+  .printable {
+    position: absolute;
+    inset: 0;
+    background: white !important;
+    color: #111 !important;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    max-height: none;
+    padding: 20px;
+  }
+  .printable button,
+  .no-print {
+    display: none !important;
+  }
+  .printable input,
+  .printable select {
+    border: 0;
+  }
+  .sheet {
+    overflow: visible;
+    max-height: none;
+  }
+  .printable .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
+
+html[data-production="true"] .page-number {
+  display: none;
+}
