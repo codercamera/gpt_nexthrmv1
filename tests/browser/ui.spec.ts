@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-async function login(page: any, user = "admin") {
-  await page.goto("/");
+async function login(page: any, user = "admin", url = "/") {
+  await page.goto(url);
   await page.getByLabel("รหัส Workspace").fill("demo");
   await page.getByLabel("อีเมล", { exact: true }).fill(`${user}@test.com`);
   await page.getByLabel("รหัสผ่าน", { exact: true }).fill("test123456789");
@@ -9,6 +9,33 @@ async function login(page: any, user = "admin") {
     page.getByRole("heading", { name: "หน้าหลัก", exact: true }),
   ).toBeVisible();
 }
+test("Vite development UI logs in and connects its proxied WebSocket", async ({
+  page,
+}) => {
+  await login(page, "admin", "http://localhost:5173");
+  const connected = await page.evaluate(async () => {
+    const me = await (await fetch("/api/me")).json();
+    return new Promise<boolean>((resolve) => {
+      const ws = new WebSocket(
+        `ws://${location.host}/ws?company=${me.companies[0].id}`,
+      );
+      const timeout = setTimeout(() => {
+        ws.close();
+        resolve(false);
+      }, 5000);
+      ws.onopen = () => {
+        clearTimeout(timeout);
+        ws.close();
+        resolve(true);
+      };
+      ws.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+    });
+  });
+  expect(connected).toBe(true);
+});
 test("desktop login, all admin pages, language and dark mode", async ({
   page,
 }) => {

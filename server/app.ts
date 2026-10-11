@@ -3,6 +3,7 @@ import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { secureHeaders } from "hono/secure-headers";
 import { z, ZodError } from "zod";
 import { HTTPException } from "hono/http-exception";
+import { isAllowedOrigin } from "./origin";
 import type { Database } from "bun:sqlite";
 import { repository, id, now, type Row } from "./db";
 import {
@@ -88,8 +89,8 @@ export function createApp(
   app.use("/api/*", async (c, next) => {
     if (!["GET", "HEAD", "OPTIONS"].includes(c.req.method)) {
       const origin = c.req.header("origin");
-      const expected = process.env.APP_ORIGIN || new URL(c.req.url).origin;
-      if (origin && origin !== expected) fail("Invalid request origin", 403);
+      if (origin && !isAllowedOrigin(origin, c.req.url))
+        fail("Invalid request origin", 403);
     }
     if (
       [

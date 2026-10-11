@@ -3,6 +3,7 @@ import { openDatabase, repository, id, now } from "../server/db";
 import { createApp } from "../server/app";
 import { seed } from "../server/seed";
 import { encryption, hash } from "../server/security";
+import { isAllowedOrigin } from "../server/origin";
 import { Database } from "bun:sqlite";
 import { unlinkSync } from "node:fs";
 const db = openDatabase(":memory:"),
@@ -105,6 +106,22 @@ describe("Authentication & tenant/company boundaries", () => {
         )
       ).status,
     ).toBe(403));
+  test("login from the local Vite frontend succeeds", async () => {
+    const res = await app.request("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        origin: "http://localhost:5173",
+      },
+      body: JSON.stringify({
+        tenant_code: "demo",
+        email: "admin@test.com",
+        password,
+      }),
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("set-cookie")).toContain("hrm_session=");
+  });
   test("password mutation rejects incorrect old password", async () =>
     expect(
       (
@@ -114,6 +131,79 @@ describe("Authentication & tenant/company boundaries", () => {
         })
       ).status,
     ).toBe(403));
+});
+describe("Shared HTTP and WebSocket origin policy", () => {
+  const local = "http://localhost:3000/api/auth/login";
+  test("development accepts Vite with the previous localhost APP_ORIGIN setting", () => {
+    for (const origin of [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://[::1]:5173",
+    ])
+      expect(
+        isAllowedOrigin(origin, local, {
+          appOrigin: "http://localhost:3000",
+          production: false,
+        }),
+      ).toBe(true);
+  });
+  test("empty development setting accepts the actual request host", () => {
+    expect(
+      isAllowedOrigin(
+        "http://192.168.1.10:3000",
+        "http://192.168.1.10:3000/api/auth/login",
+        { appOrigin: "", production: false },
+      ),
+    ).toBe(true);
+  });
+  test("production uses configured public origin behind a reverse proxy", () => {
+    expect(
+      isAllowedOrigin("https://hrm.example.com", local, {
+        appOrigin: "https://hrm.example.com/",
+        production: true,
+      }),
+    ).toBe(true);
+  });
+  test("production never enables local Vite exceptions", () => {
+    expect(
+      isAllowedOrigin("http://localhost:5173", local, {
+        appOrigin: "http://localhost:3000",
+        production: true,
+      }),
+    ).toBe(false);
+  });
+  test("configured public origin is strict even in development", () => {
+    expect(
+      isAllowedOrigin("http://localhost:5173", local, {
+        appOrigin: "https://hrm.example.com",
+        production: false,
+      }),
+    ).toBe(false);
+  });
+  test("rejects lookalike hosts, unexpected ports, null and malformed origins", () => {
+    for (const origin of [
+      null,
+      "null",
+      "",
+      "https://evil.example",
+      "http://localhost.evil.example:5173",
+      "http://localhost:5174",
+      "http://localhost:5173/path",
+      "http://localhost:5173@evil.example",
+      "not-a-url",
+    ])
+      expect(
+        isAllowedOrigin(origin, local, { appOrigin: "", production: false }),
+      ).toBe(false);
+  });
+  test("rejects an application path in APP_ORIGIN", () => {
+    expect(
+      isAllowedOrigin("https://hrm.example.com", local, {
+        appOrigin: "https://hrm.example.com/login",
+        production: true,
+      }),
+    ).toBe(false);
+  });
 });
 describe("Employee transactions, encrypted fields & history", () => {
   let eid: string;

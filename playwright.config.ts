@@ -14,9 +14,16 @@ export default defineConfig({
   },
   workers: 1,
   reporter: "list",
-  webServer: {
-    command: "bun server/index.ts",
-    url: "http://localhost:3000/api/health",
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: "bun server/index.ts",
+      url: "http://localhost:3000/api/health",
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "bun run dev:ui --host 127.0.0.1",
+      url: "http://localhost:5173",
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });

@@ -1,10 +1,13 @@
 import { openDatabase, repository } from "./db";
 import { createApp, type EventMessage } from "./app";
 import { authenticate, authorize } from "./security";
+import { isAllowedOrigin } from "./origin";
 import { randomBytes } from "node:crypto";
 import { readFileSync, mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 let key = process.env.DATA_ENCRYPTION_KEY;
+if (process.env.NODE_ENV === "production" && !process.env.APP_ORIGIN?.trim())
+  throw Error("APP_ORIGIN is required in production (public HTTPS origin)");
 if (!key) {
   if (process.env.NODE_ENV === "production")
     throw Error("DATA_ENCRYPTION_KEY is required in production");
@@ -48,9 +51,7 @@ const server = Bun.serve<SocketData>({
     const url = new URL(req.url);
     if (url.pathname === "/ws") {
       try {
-        if (
-          req.headers.get("origin") !== (process.env.APP_ORIGIN || url.origin)
-        )
+        if (!isAllowedOrigin(req.headers.get("origin"), req.url))
           return new Response("Origin denied", { status: 403 });
         const raw =
           req.headers

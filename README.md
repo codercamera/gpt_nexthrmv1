@@ -46,6 +46,10 @@ bun run dev
 bun run dev:ui
 ```
 
+เปิด UI ที่ `http://localhost:5173` สำหรับ HMR (`5173` เป็นพอร์ตตายตัว) ส่วน Bun ใช้ `3000`. ใน development ให้ `APP_ORIGIN` ว่างเพื่อใช้ origin ของ request; รองรับ local Vite ที่ `localhost`, `127.0.0.1` และ IPv6 loopback พอร์ต `5173` สำหรับทั้ง API และ WebSocket ด้วย หากเปิด Vite จากเครื่องอื่น ให้ตั้ง `APP_ORIGIN` เป็น origin ของหน้า UI ที่เปิดจริง แล้ว restart Bun.
+
+หาก login แจ้ง `Invalid request origin` ให้ตรวจ `.env`: production ต้องใช้ `APP_ORIGIN` ตรงกับ **protocol + hostname + port ของหน้า UI** เช่น `https://hrm.example.com` ไม่ใช่ URL ภายในของ Bun และไม่ใส่ `/login` หรือ `/api`. หลังแก้ environment ต้อง restart server. ค่าเริ่มต้นไม่ผูกกับ `localhost:3000` แล้ว; production จะหยุดเริ่มทำงานหากไม่กำหนด `APP_ORIGIN`.
+
 ## ทดสอบ
 
 ```bash
